@@ -38,6 +38,29 @@ def genSpoof_list( dir_meta,is_train=False,is_eval=False):
         return d_meta,file_list
 
 
+def load_sample(sample_path, max_len = 96000):
+    
+    y_list = []
+    y, sr = librosa.load(sample_path, sr=None)
+    
+    if sr != 24000:
+        y = librosa.resample(y, orig_sr = sr, target_sr = 24000)
+        
+    if(len(y) <= 96000):
+        return [Tensor(pad(y, max_len))]
+        
+    for i in range(int(len(y)/96000)):
+        if (i+1) ==  range(int(len(y)/96000)):
+            y_seg = y[i*96000 : ]
+        else:
+            y_seg = y[i*96000 : (i+1)*96000]
+        # print(len(y_seg))
+        y_pad = pad(y_seg, max_len)
+        y_inp = Tensor(y_pad)
+        
+        y_list.append(y_inp)
+        
+    return y_list
 
 def pad(x, max_len=64600):
     x_len = x.shape[0]
